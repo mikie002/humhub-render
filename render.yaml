@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: humhub-web
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    disk:
+      name: humhub-uploads
+      mountPath: /var/www/html/uploads
+      sizeGB: 1
+    envVars:
+      - key: HUMHUB_DEBUG
+        value: false
+      - key: HUMHUB_CONFIG__COMPONENTS__DB__CHARSET
+        value: utf8mb4
+
+  - type: worker
+    name: humhub-queue
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerCommand: php /var/www/html/protected/yii queue/listen --verbose=1
+    envVars:
+      - key: HUMHUB_DEBUG
+        value: false
+      - key: HUMHUB_CONFIG__COMPONENTS__DB__CHARSET
+        value: utf8mb4
