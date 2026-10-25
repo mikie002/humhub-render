@@ -34,8 +34,7 @@ RUN printf "%s\n" \
     "    DocumentRoot /var/www/html" \
     "    DirectoryIndex index.php index.html" \
     "    <Directory /var/www/html>" \
-    "        DirectoryIndex index.php index.html" \
-    "        Options -Indexes +FollowSymLinks" \
+    "        Options +FollowSymLinks -Indexes" \
     "        AllowOverride All" \
     "        Require all granted" \
     "    </Directory>" \
@@ -46,11 +45,17 @@ RUN printf "%s\n" \
 # Copy HumHub files
 COPY . /var/www/html/
 
+# Ensure .htaccess exists (HumHub needs it for mod_rewrite)
+RUN if [ ! -f /var/www/html/.htaccess ] && [ -f /var/www/html/.htaccess.dist ]; then cp /var/www/html/.htaccess.dist /var/www/html/.htaccess; fi
+
+# Debug: show what's actually in the web root
+RUN ls -la /var/www/html/ | head -25
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && find /var/www/html/protected/runtime -type d -exec chmod 775 {} \; 2>/dev/null || true \
-    && find /var/www/html/uploads -type d -exec chmod 775 {} \; 2>/dev/null || true \
-    && find /var/www/html/assets -type d -exec chmod 775 {} \; 2>/dev/null || true
+    && chmod -R 755 /var/www/html \
+    && mkdir -p /var/www/html/protected/runtime /var/www/html/uploads /var/www/html/assets \
+    && chmod -R 775 /var/www/html/protected/runtime /var/www/html/uploads /var/www/html/assets
 
 WORKDIR /var/www/html
 
