@@ -32,7 +32,9 @@ RUN printf "%s\n" \
     "<VirtualHost *:80>" \
     "    ServerName localhost" \
     "    DocumentRoot /var/www/html" \
+    "    DirectoryIndex index.php index.html" \
     "    <Directory /var/www/html>" \
+    "        DirectoryIndex index.php index.html" \
     "        Options -Indexes +FollowSymLinks" \
     "        AllowOverride All" \
     "        Require all granted" \
@@ -46,8 +48,9 @@ COPY . /var/www/html/
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 775 /var/www/html/protected/runtime /var/www/html/uploads /var/www/html/assets 2>/dev/null || true
+    && find /var/www/html/protected/runtime -type d -exec chmod 775 {} \; 2>/dev/null || true \
+    && find /var/www/html/uploads -type d -exec chmod 775 {} \; 2>/dev/null || true \
+    && find /var/www/html/assets -type d -exec chmod 775 {} \; 2>/dev/null || true
 
 WORKDIR /var/www/html
 
